@@ -11,13 +11,20 @@ class HighlightChangesCore:
     def __init__(self):
         self.settings = sublime.load_settings(__name__ + '.sublime-settings')
         self.regions = []
-        self._scope = "markup.changed"
+        self._scope = "comment"
+        self._current_region = 0
 
     def highlight_as_you_type(self):
         return self.settings.get("highlight_as_you_type", True)
 
     def highlight_delay(self):
         return self.settings.get("highlight_delay", 2000) # default delay is 2000ms
+
+    def goto_next_diff(self, view):
+        if self._current_region >= len(self.regions):
+            self._current_region = 0
+        view.show(self.regions[self._current_region])
+        self._current_region += 1
 
     def get_diff(self, s1, s2):   
         s = difflib.SequenceMatcher(None, s1, s2)        
@@ -30,22 +37,30 @@ class HighlightChangesCore:
         return diffs
 
     def highlight(self, view):
-        currentText = view.substr(Region(0, view.size()))        
-        originalText = codecs.open(view.file_name(), "r", "utf-8").read()
-        diffs = self.get_diff(originalText, currentText)
-        self.regions = [Region(d[0], d[1]) for d in diffs if d[0] != d[1]]
-        view.add_regions("changes", self.regions, self._scope, "dot")
+        try:
+            currentText = view.substr(Region(0, view.size()))        
+            originalText = codecs.open(view.file_name(), "r", "utf-8").read()
+            diffs = self.get_diff(originalText, currentText)
+            self.regions = [Region(d[0], d[1]) for d in diffs if d[0] != d[1]]
+            view.add_regions("changes", self.regions, self._scope, "dot")
+        except:
+            pass
 
     def clear(self, view):
-        view.add_regions("changes", [], "changes", "dot")
+        view.add_regions("changes", [], "changes", "dot", sublime.DRAW_OUTLINED)
 
 class HighlightchangesCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         self.highlightCore = HighlightChangesCore()
         sublime_plugin.TextCommand.__init__(self, view)
 
+    def run(self, edit):        
+        self.highlightCore.highlight(self.view)
+
+class GotonextdiffCommand(HighlightchangesCommand):    
     def run(self, edit): 
         self.highlightCore.highlight(self.view)
+        self.highlightCore.goto_next_diff(self.view)
 
 class HighlightWhenTypingListener(sublime_plugin.EventListener):
     def __init__(self):
@@ -55,7 +70,7 @@ class HighlightWhenTypingListener(sublime_plugin.EventListener):
 
     def handle_timeout(self, view):  
         self.pending = self.pending - 1  
-        if self.pending == 0:  
+        if self.pending == 0:
             self.on_idle(view)
   
     def on_idle(self, view):  
