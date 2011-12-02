@@ -14,16 +14,10 @@ class HighlightChangesCore:
         self._scope = "markup.changed"
 
     def highlight_as_you_type(self):
-        if self.settings.get("highlight_as_you_type"):
-            return self.settings.get("highlight_as_you_type")
-        else:
-            return true
+        return self.settings.get("highlight_as_you_type", True)
 
     def highlight_delay(self):
-        if self.settings.get("highlight_delay"):
-            return self.settings.get("highlight_delay")
-        else:
-            return 2000 # default delay is 2000ms
+        return self.settings.get("highlight_delay", 2000) # default delay is 2000ms
 
     def get_diff(self, s1, s2):   
         s = difflib.SequenceMatcher(None, s1, s2)        
