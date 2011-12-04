@@ -1,5 +1,7 @@
 {
+	// enables or disables automatic highlighting
     "highlight_as_you_type": true,
+    // sets the delay of idle in milliseconds when changes should be highlighted
     "highlight_delay": 2000,
 
     // controls the mode of changes highlighting: in "dots" mode only dots will appear, in "text" mode whole new text will be highlighted
