@@ -1,6 +1,10 @@
 [
     {
-        "caption": "Highlight changes",
+        "caption": "Change tracker: Highlight changes",
         "command": "highlightchanges"
+    },
+    {
+        "caption": "Change tracker: Go to next diff",
+        "command": "gotonextdiff"
     }
 ]

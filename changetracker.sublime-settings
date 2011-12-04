@@ -1,4 +1,7 @@
 {
     "highlight_as_you_type": true,
-    "highlight_delay": 2000
+    "highlight_delay": 2000,
+
+    // controls the mode of changes highlighting: in "dots" mode only dots will appear, in "text" mode whole new text will be highlighted
+    "highlight_mode": "dots"
 }
