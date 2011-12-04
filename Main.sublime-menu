@@ -1,0 +1,24 @@
+[
+    {
+        "id": "view",
+        "caption": "View",
+        "children":
+        [
+            {
+                "id": "ChangeTracker",
+                "caption": "Change Tracker",
+                "children":
+                [
+                    {
+                        "caption": "Highlight changes",
+                        "command": "highlightchanges"
+                    },
+                    {
+                        "caption": "Go to next",
+                        "command": "gotonextdiff"
+                    }
+                ]
+            }
+        ]
+    }
+]

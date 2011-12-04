@@ -52,7 +52,7 @@ class HighlightChangesCore:
             if self.highlight_mode() == HighlightChangesCore.MODE_TEXT:
                 self.regions = [Region(d[0], d[1]) for d in diffs if d[0] != d[1]]
             if self.highlight_mode() == HighlightChangesCore.MODE_DOTS:
-                self.regions = [Region(d[0], d[0]) for d in diffs if d[0] != d[1]]                
+                self.regions = [Region(d[1], d[1]) for d in diffs if d[0] != d[1]]                
             view.add_regions("changes", self.regions, self._scope, "dot")
         except:
             pass
