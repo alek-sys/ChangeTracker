@@ -1,0 +1,4 @@
+[
+	{ "keys": ["super+k", "super+d"], "command": "highlightchanges" },
+	{ "keys": ["super+k", "super+l"], "command": "gotonextdiff " }
+]
