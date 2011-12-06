@@ -1,11 +1,12 @@
 import difflib
 import codecs
 import functools
+import os
 import sublime
 import sublime_plugin
 
 from sublime import Region
-from threading import Timer
+from threading import Timer, Thread
 
 class HighlightChangesCore:
     # highlight modes
@@ -17,6 +18,7 @@ class HighlightChangesCore:
         self.regions = []
         self._scope = "comment"
         self._current_region = 0
+        self.diff_thread = None
 
     def highlight_as_you_type(self):
         return self.settings.get("highlight_as_you_type", True)
@@ -44,28 +46,47 @@ class HighlightChangesCore:
                 prev = u
         return diffs
 
-    def highlight(self, view):
+    def highlight_sync(self, view, currentText, filename, mode):
         try:
-            currentText = view.substr(Region(0, view.size()))        
-            originalText = codecs.open(view.file_name(), "r", "utf-8").read()
+            originalText = codecs.open(filename, "r", "utf-8").read()
             diffs = self.get_diff(originalText, currentText)
-            if self.highlight_mode() == HighlightChangesCore.MODE_TEXT:
+            if mode == HighlightChangesCore.MODE_TEXT:
                 self.regions = [Region(d[0], d[1]) for d in diffs if d[0] != d[1]]
-            if self.highlight_mode() == HighlightChangesCore.MODE_DOTS:
-                self.regions = [Region(d[1], d[1]) for d in diffs if d[0] != d[1]]                
-            view.add_regions("changes", self.regions, self._scope, "dot")
+            if mode == HighlightChangesCore.MODE_DOTS:
+                self.regions = [Region(d[1], d[1]) for d in diffs if d[0] != d[1]]
+            # execute in gui thread
+            sublime.set_timeout(functools.partial(view.add_regions, "changes", self.regions, self._scope, "dot"), 1)
         except:
             pass
 
-    def clear(self, view):
-        view.add_regions("changes", [], "changes", "dot", sublime.DRAW_OUTLINED)
+    def is_enabled(self, view):
+        fs = os.path.getsize(view.file_name()) / 1024
+        max_size = self.settings.get("max_allowed_file_size", 256)
+        return fs < max_size
+
+    def highlight(self, view):
+        currentText = view.substr(Region(0, view.size()))
+        filename = view.file_name()
+        mode = self.highlight_mode()
+        if self.is_enabled(view):
+            self.diff_thread = Thread(target=self.highlight_sync, args=(view, currentText,filename,mode))
+            if self.diff_thread.is_alive():
+                pass
+                #self.diff_thread._Thread__stop()
+                #self.diff_thread.start()
+            else:
+                self.diff_thread.start()
+
+    def clear(self,view):
+        if view:
+            view.add_regions("changes", [], "changes", "dot", sublime.DRAW_OUTLINED)
 
 class HighlightchangesCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
+    def __init__(self, edit):
         self.highlightCore = HighlightChangesCore()
-        sublime_plugin.TextCommand.__init__(self, view)
+        sublime_plugin.TextCommand.__init__(self, edit)
 
-    def run(self, edit):        
+    def run(self, edit):
         self.highlightCore.highlight(self.view)
 
 class GotonextdiffCommand(HighlightchangesCommand):    
