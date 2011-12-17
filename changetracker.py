@@ -57,10 +57,10 @@ class HighlightChangesCore:
             # execute in gui thread
             sublime.set_timeout(functools.partial(view.add_regions, "changes", self.regions, self._scope, "dot"), 1)
         except:
-            raise
+            pass
 
     def is_enabled(self, view):
-        if (os.path.exists(view.file_name())):
+        if (view.file_name() and os.path.exists(view.file_name())):
             fs = os.path.getsize(view.file_name()) / 1024
             max_size = self.settings.get("max_allowed_file_size", 256)
             return fs < max_size
