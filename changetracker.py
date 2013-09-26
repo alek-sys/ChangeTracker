@@ -48,7 +48,7 @@ class HighlightChangesCore:
     def highlight_sync(self, view, currentText, filename, mode):
         try:
             with open(filename, "rU") as f:
-                originalText = f.read().decode('utf8')
+                originalText = f.read()
             diffs = self.get_diff(originalText, currentText)
             if mode == HighlightChangesCore.MODE_TEXT:
                 self.regions = [Region(d[0], d[1]) for d in diffs if d[0] != d[1]]
